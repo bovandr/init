@@ -1,0 +1,15 @@
+
+(disable-theme 'zenburn)
+
+;;(setq prelude-theme 'doom-solarized-dark)
+;;(setq prelude-theme 'doom-solarized-dark-high-contrast)
+;;(setq prelude-theme 'material)
+;;(setq prelude-theme 'material-light)
+;;(setq prelude-theme 'modus-operandi)
+;;(setq prelude-theme 'spacemacs-dark)
+;;(setq prelude-theme 'spacemacs-light)
+;;(setq prelude-theme 'gruber-darker)
+;;(setq prelude-theme 'github-modern)
+;;(setq prelude-theme 'adwaita)
+(setq prelude-theme 'leuven)
+;;(setq prelude-theme 'tangotango)
