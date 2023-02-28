@@ -272,7 +272,7 @@
 (require 'bs)
 (require 'ibuffer)
 (defalias 'list-buffers 'ibuffer) ;; отдельный список буферов при нажатии C-x C-b
-(global-set-key (kbd "<F-2>") 'bs-show) ;; запуск buffer selection кнопкой F2
+(global-set-key (kbd "<f2>") 'bs-show) ;; запуск buffer selection кнопкой F2
 
 
 
@@ -310,9 +310,54 @@
 ;;(require 'helm-projectile)
 ;;(helm-projectile-on)
 
-;;IDO
+;;здесь ido/ivy
+
+;; IDO plugin
+;; интсрукция по ido
+;; https://www.masteringemacs.org/article/introduction-to-ido-mode
+(require 'ido)
+;;(ido-mode                      t)
+(icomplete-mode                t)
+;;(ido-everywhere                t)
+(setq ido-vitrual-buffers      t)
+(setq ido-enable-flex-matching t)
+;;Это заставит Идо угадать контекст, что я и использую.
+(setq ido-use-filename-at-point 'guess)
+;;отключить поддержку URL ffap
+(setq ido-use-url-at-point nil)
+;; Я постоянно создаю одноразовые буферы
+(setq ido-create-new-buffer 'always)
+(require 'flx-ido)
+(flx-ido-mode 1)
+
+;;https://github.com/creichert/ido-vertical-mode.el
+(require 'ido-vertical-mode)
+(ido-mode 1)
+(ido-vertical-mode 1)
+(setq ido-vertical-define-keys 'C-n-and-C-p-only)
+
+(setq ido-use-faces t)
+(set-face-attribute 'ido-vertical-first-match-face nil
+                    :background "white")
+(set-face-attribute 'ido-vertical-only-match-face nil
+                    :background "#e52b50"
+                    :foreground "white")
+(set-face-attribute 'ido-vertical-match-face nil
+                    :foreground "#b00000")
+(ido-vertical-mode 1)
+
+;;/ido-completing-read-plus
+;;https://github.com/DarwinAwardWinner/ido-completing-read-plus
+(ido-everywhere 1)
+(require 'ido-completing-read+)
+(ido-ubiquitous-mode 1)
 
 
+
+;;https://github.com/nonsequitur/smex
+;;Smex позволяет использовать ido для завершения команд в Mx, с улучшения, такие как размещение наиболее часто используемых команд в начале список.
+(require 'smex) ; Not needed if you use package.el
+(smex-initialize)
 
 ;;end ido+++++
 
@@ -338,87 +383,6 @@
 ;;;;;автозаполнение и elpy python and company
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; https://medium.com/analytics-vidhya/managing-a-python-development-environment-in-emacs-43897fd48c6a
-;; Elpy
-(use-package elpy
-  :straight t
-  :bind
-  (:map elpy-mode-map
-        ("C-M-n" . elpy-nav-forward-block)
-        ("C-M-p" . elpy-nav-backward-block))
-  :hook ((elpy-mode . (lambda ()
-                        (add-hook 'before-save-hook
-                                  'elpy-format-code nil t)))
-         (elpy-mode . flycheck-mode)
-         (elpy-mode . (lambda ()
-                        (set (make-local-variable 'company-backends)
-                             '((elpy-company-backend :with company-yasnippet))))))
-  :init
-  (elpy-enable)
-  :config
-  (setq elpy-modules (delq 'elpy-module-flymake elpy-modules))
-                                        ; fix for MacOS, see https://github.com/jorgenschaefer/elpy/issues/1550
-  (setq elpy-shell-echo-output nil)
-  (setq elpy-rpc-python-command "python3")
-  (setq elpy-rpc-timeout 2))
-
-(setq python-shell-interpreter "ipython"
-      python-shell-interpreter-args "-i --simple-prompt")
-
-;;Company
-
-(use-package company
-  :straight t
-  :diminish company-mode
-  :init
-  (global-company-mode)
-  :config
-  ;; set default `company-backends'
-  (setq company-backends
-        '((company-files          ; files & directory
-           company-keywords       ; keywords
-           company-capf)                ; completion-at-point-functions
-          (company-abbrev company-dabbrev)
-          (company-capf);;завершение org-roam
-          ))
-
-  (use-package company-statistics
-    :straight t
-    :init
-    (company-statistics-mode))
-
-  (use-package company-web
-    :straight t)
-
-  (use-package company-try-hard
-    :straight t
-    :bind
-    (("C-<tab>" . company-try-hard)
-     :map company-active-map
-     ("C-<tab>" . company-try-hard)))
-
-  ;; https://github.com/company-mode/company-quickhelp
-  (use-package company-quickhelp
-    :straight t
-    :config
-    (company-quickhelp-mode))
-  )
-
-(eval-after-load 'company
-  '(define-key company-active-map (kbd "C-c h") #'company-quickhelp-manual-begin))
-
-
-(use-package prescient
-  :config
-  (setq prescient-history-length 5))
-
-(use-package ivy-prescient
-  :config
-  (ivy-prescient-mode))
-
-(use-package company-prescient
-  :config
-  (company-prescient-mode))
 
 
 
@@ -1096,31 +1060,7 @@
 
 
 
-;;https://github.com/Kungsgeten/org-brain
-(use-package org-brain :ensure t
-  :init
-  (setq org-brain-path "~/.emacs.d/main_packages/org-brain-articles")
-  ;; For Evil users
-  (with-eval-after-load 'evil
-    (evil-set-initial-state 'org-brain-visualize-mode 'emacs))
-  :config
-  (bind-key "C-c b" 'org-brain-prefix-map org-mode-map)
-  (setq org-id-track-globally t)
-  (setq org-id-locations-file "~/.emacs.d/.org-id-locations")
-  (add-hook 'before-save-hook #'org-brain-ensure-ids-in-buffer)
-  ;;(push '("b" "Brain" plain (function org-brain-goto-end)
-       ;;   "* %i%?" :empty-lines 1)
-      ;;  org-capture-templates)
-  (setq org-brain-visualize-default-choices 'all)
-  (setq org-brain-title-max-length 12)
-  (setq org-brain-include-file-entries nil
-        org-brain-file-entries-use-title nil))
 
-;; Allows you to edit entries directly from org-brain-visualize
-(use-package polymode
-  :config
-  (add-hook 'org-brain-visualize-mode-hook #'org-brain-polymode))
-(setq org-default-notes-file (concat org-directory "~/org/notes.org"))
 
 
 ;;https://github.com/snosov1/toc-org/tree/bf2e4b358efbd860ecafe6e74776de0885d9d100
